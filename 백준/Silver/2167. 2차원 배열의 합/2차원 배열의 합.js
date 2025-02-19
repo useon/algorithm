@@ -6,15 +6,30 @@ const arr = input.slice(1, n + 1).map((x) => x.split(' ').map((Number)));
 const k = Number(input[n+1])
 const points = input.slice(n+2).map((x) => x.split(' ').map((Number)));
 
-for(let a = 0; a < k; a++) {
-    let count = 0;
-    const [i, j, x, y] = points[a];
-    
-    for(let b = i - 1; b < x; b++) {
-        for(let c = j - 1; c < y; c++) {
-            count += arr[b][c];
-        }
+const prefixSum = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0))
+
+for(let i = 1; i <= n; i++) {
+    for(let j = 1; j <= m; j++) {
+        prefixSum[i][j] = 
+            arr[i - 1][j - 1] +
+            prefixSum[i - 1][j] +
+            prefixSum[i][j - 1] -
+            prefixSum[i - 1][j - 1];
     }
-    console.log(count);
-    count = 0;
 }
+
+const results = [];
+
+for(let a = 0; a < k; a++) {
+    const [i, j, x, y] = points[a];
+
+    const sum =
+        prefixSum[x][y] -
+        prefixSum[i - 1][y] -
+        prefixSum[x][j - 1] +
+        prefixSum[i - 1][j - 1];
+
+    results.push(sum);
+}
+
+console.log(results.join('\n'));
