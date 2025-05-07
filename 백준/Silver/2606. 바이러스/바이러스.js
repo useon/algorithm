@@ -17,21 +17,22 @@ const visited = Array(computerNumber + 1).fill(false);
 
 // 1번 컴퓨터를 통해 웜 바이러스에 걸리게 되는 컴퓨터의 수?
 
-bfs(1);
+dfs(1);
 
-function bfs(start) {
-    const queue = [start];
+function dfs(start) {
+    const stack = [start];
     visited[start] = true;
-    while(queue.length > 0) {
-        const cur = queue.shift();
+
+    while(stack.length > 0) {
+        const cur = stack.pop();
         graph[cur].forEach((next, index) => {
             if(next === 1 && !visited[index]) {
                 visited[index] = true;
-                queue.push(index);
+                stack.push(index);
                 count += 1;
             }
         })
     }
 }
 
-console.log(count);
+console.log(count)
