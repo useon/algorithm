@@ -19,8 +19,8 @@ for (let i = 0; i < N; i++) {
     if (stack.length > 0 && stack[stack.length - 1] === height) continue;
     
     // 더 높은 경우만 다른 건물이므로 push
-    if (height !== 0) stack.push(height);   
+    if (height !== 0) stack.push(height);
 }
 
 // 스택에 남아 있는 것들은 각각의 건물이라고 볼 수 있기 때문에.
-console.log(count + stack.length);
+console.log(count += stack.length);
