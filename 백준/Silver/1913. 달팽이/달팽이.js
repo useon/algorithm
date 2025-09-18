@@ -1,75 +1,41 @@
 const fs = require('fs');
-const filePath = process.platform === 'linux' ? '/dev/stdin' : './input.txt';
-const input = fs
-  .readFileSync(filePath)
-  .toString()
-  .trim()
-  .split('\n')
-  .map((x) => +x);
-const n = input[0];
-const findLocationNumber = input[1];
-const findLocation = [];
-const grid = [];
+const [N, K] = fs.readFileSync('/dev/stdin').toString().trim().split('\n').map(Number);
+const grid = Array.from({ length: N }, () => Array(N).fill(0));
+let num = N * N; // 넣어줄 숫자를 담을 변수. 초기값은 N * N부터 넣어준다.
+// 아래, 오른, 위, 왼 순서로 방향이 이동된다.
+const dx = [0, 1, 0, -1];
+const dy = [1, 0, -1, 0];
+// 방향을 순서대로 0, 1, 2, 3으로 붙인다. 
+let direction = 0; // 처음은 아래
+let targetX, targetY; // 나중에 K를 만나면 저장
+// 처음 위치 인덱스는 0, 0에서 시작
+let x = 0;
+let y = 0;
+let nx = 0;
+let ny = 0; 
 
-// 격자 만들기
-for (let row = 0; row < n; row++) {
-  const arr = [];
-  for (let column = 0; column < n; column++) {
-    arr.push(1);
-  }
-  grid.push(arr);
+// 가장 큰 수부터 1까지 줄이면서 grid를 채울 것이다.
+while(num >= 1) {
+    if(num === K) {
+        targetX = x + 1;
+        targetY = y + 1;
+    }
+    grid[y][x] = num;
+
+    // 다음 좌표를 계산
+    nx = x + dx[direction];
+    ny = y + dy[direction];
+
+    // 유효한 범위 및 위치가 아니기 때문에 방향을 바꿔야 된다.
+    if(nx < 0 || nx >= N || ny < 0 || ny >= N || grid[ny][nx] !== 0) {
+        // 0,1,2,3 이후에 다시 0으로 돌아와야 되기 때문에
+        direction = [direction + 1] % 4;
+        nx = x + dx[direction];
+        ny = y + dy[direction];
+    }
+    x = nx;
+    y = ny;
+    num--;
 }
-
-// 달팽이 그리기
-const rotation = (n - 1) / 2;
-const center = [Math.floor(n / 2), Math.floor(n / 2)];
-// let start = [Math.floor(n/2) - 1, Math.floor(n/2)];
-let endLocation = [Math.floor(n / 2), Math.floor(n / 2)];
-let endNumber = 1;
-for (let number = 1; number <= rotation; number++) {
-  // number이 1이면 row column = 2까지만 가능함.
-  if (findLocationNumber === endNumber)
-    findLocation.push(endLocation[0], endLocation[1]);
-  // 윗쪽
-  for (let column = endLocation[1]; column <= center[1] + number; column++) {
-    endNumber += 1;
-    if (findLocationNumber === endNumber)
-      findLocation.push(endLocation[0] - 1, column);
-    grid[endLocation[0] - 1][column] = endNumber;
-  }
-  endLocation = [endLocation[0] - 1, center[1] + number];
-
-  // 오른쪽
-  for (let row = endLocation[0] + 1; row <= center[0] + number; row++) {
-    endNumber += 1;
-    if (findLocationNumber === endNumber)
-      findLocation.push(row, endLocation[1]);
-    grid[row][endLocation[1]] = endNumber;
-  }
-  endLocation = [center[0] + number, endLocation[1]];
-
-  // 아랫쪽
-  for (
-    let column = endLocation[1] - 1;
-    column >= center[1] - number;
-    column--
-  ) {
-    endNumber += 1;
-    if (findLocationNumber === endNumber)
-      findLocation.push(endLocation[0], column);
-    grid[endLocation[0]][column] = endNumber;
-  }
-  endLocation = [endLocation[0], center[1] - number];
-
-  // 왼쪽
-  for (let row = endLocation[0] - 1; row >= center[0] - number; row--) {
-    endNumber += 1;
-    if (findLocationNumber === endNumber)
-      findLocation.push(row, endLocation[1]);
-    grid[row][endLocation[1]] = endNumber;
-  }
-  endLocation = [center[0] - number, endLocation[1]];
-}
-
-grid.map((x) => console.log(x.join(' ')));
-console.log(findLocation[0] + 1, findLocation[1] + 1);
+console.log(grid.map((x) => x.join(' ')).join('\n'));
+console.log(targetY, targetX);
