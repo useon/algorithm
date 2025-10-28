@@ -1,38 +1,43 @@
 const fs = require('fs');
-const filePath = process.platform === 'linux' ? '/dev/stdin' : '../../input.txt';
+const filePath = process.platform === 'linux' ? '/dev/stdin' : './input.txt';
 const input = fs.readFileSync(filePath).toString().trim().split('\n');
-const N = Number(input[0]);
-const arr = [0, ...input.slice(1).map(Number)];
+const n = Number(input[0])
+const first = Array.from({ length: n }, (_, i) => i + 1)
+const secend = input.slice(1).map(Number)
+const graph = Array.from({length: n+1}, () => [])
+const visited = Array(n+1).fill(false)
+let result = []
 
-const visited = Array(N + 1).fill(false);
-const finished = Array(N + 1).fill(false);
-
-const results = [];
-
-for(let i = 1; i <= N; i++) {
-    if(!visited[i]) {
-        dfs(i);
-    }
+for(let i = 1; i <= n; i++) {
+    graph[i].push(secend[i-1])
 }
 
-function dfs(now) {
-    visited[now] = true;
-    const next = arr[now];
+function dfs(path, node, depth) {
+    if(path === node && depth > 1) {
+        return true
+    }
 
-    if(!visited[next]) {
-        dfs(next);
-    } else if(!finished[next]) {
-        // 사이클이니 경로를 넣기 
-        let i = next;
-        while (i !== now) {
-            results.push(i);
-            i = arr[i];
+    visited[node] = true
+    for(const next of graph[node]) {
+        if (next === path) {
+          visited[node] = false;
+          return true;
         }
-        results.push(now);
+        if(!visited[next]) {
+            if(dfs(path, next, depth + 1)) {
+                visited[node] = false
+                return true
+            } 
+        }
     }
-    finished[now] = true;
+    visited[node] = false
+    return false
 }
 
-const answer = Array.from(new Set(results)).sort((a, b) => a - b);
-console.log(answer.length);
-console.log(answer.join('\n'));
+for(let i = 1; i <= n; i++) {
+    visited.fill(false)
+    if(dfs(i, i, 1)) result.push(i)
+}
+
+console.log(result.length)
+console.log(result.sort((a, b) => a - b).join('\n'))
