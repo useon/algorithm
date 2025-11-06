@@ -1,92 +1,72 @@
 const fs = require('fs');
-const filePath = process.platform === 'linux' ? '/dev/stdin' : '../input.txt';
+const filePath = process.platform === 'linux' ? '/dev/stdin' : './input.txt';
 const input = fs.readFileSync(filePath).toString().trim().split('\n');
-const [N, M] = input[0].split(' ').map(Number);
-const info = input.slice(1).map((x) => x.split(' ').map(Number));
-const zeroPositions = [];
-const virusPositions = [];
-const dx = [-1, 1, 0, 0];
-const dy = [0, 0, -1, 1];
+const [n, m] = input[0].split(' ').map(Number)
+const graph = input.slice(1).map((x) => x.split(' ').map(Number))
+const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]]
+const virusPositions = []
+const zeroPositions = []
 
-//  브루트포스 돌면서 모든 0의 좌표 수집
-for(let i = 0; i < N; i++) {
-    for(let j = 0; j < M; j++) {
-        if(info[i][j] === 0) {
-            zeroPositions.push([i, j]);
-        }
-        if(info[i][j] === 2) {
-            virusPositions.push([i, j]);
+for(let i = 0; i < n; i++) {
+    for(let j = 0; j < m; j++) {
+        if(graph[i][j] === 0) {
+            zeroPositions.push([i, j])
+        } else if(graph[i][j] === 2) {
+            virusPositions.push([i, j])
         }
     }
 }
-const combinations = getCombinations(zeroPositions, 3);
 
-// 해당 좌표들 중에서 3개의 조합 구하기
-function getCombinations(arr, r) {
-    const result = [];
-    const temp = [];
-
-    function backtrack(start) {
-        if (temp.length === r) {
-            result.push([...temp]);
-            return;
-        }
-
-        for (let i = start; i < arr.length; i++) {
-            temp.push(arr[i]);
-            backtrack(i + 1);
-            temp.pop();
-        }
+function simulate(a, b, c) {
+    const grid = []
+    let safeZone = 0
+    for(let i = 0; i < n; i++) {
+        grid.push([...graph[i]])
     }
 
-    backtrack(0);
-    return result;
-}
+    const [r1, c1] = zeroPositions[a]
+    const [r2, c2] = zeroPositions[b]
+    const [r3, c3] = zeroPositions[c]
 
-// combinations의 모든 경우를 돌면서 최대 영역인 경우를 구하기
-let maxCount = 0;
-for(let i = 0; i < combinations.length; i++) {
-    const graph = info.map(row => [...row]);
-    const [first, second, third] = combinations[i];
-    graph[first[0]][first[1]] = 1;
-    graph[second[0]][second[1]] = 1;
-    graph[third[0]][third[1]] = 1;
-    maxCount = Math.max(maxCount, bfs(graph));
-}
-    
+    grid[r1][c1] = 1
+    grid[r2][c2] = 1
+    grid[r3][c3] = 1
 
-// bfs 마다 벽을 새롭게 세운 맵으로 돌아야 함
-function bfs(graph) {
-    const virusQueue = [...virusPositions.map(([x, y]) => [x, y])];
+    // 이제 바이러스를 퍼뜨리기
+    const queue = [...virusPositions]    
+    let index = 0
 
-    for(let i = 0; i < virusQueue.length; i++) {
-        const [x, y] = virusQueue[i];
-    }
+    while(queue.length > index) {
+        const [curRow, curCol] = queue[index++]
 
-    while(virusQueue.length > 0) {
-        const [curX, curY] = virusQueue.shift();
-        for(let dir = 0; dir < 4; dir++) {
-            const [nextX, nextY] = [curX + dx[dir], curY + dy[dir]];
+        for(let i = 0; i < 4; i++) {
+            const [nextRow, nextCol] = [curRow + directions[i][0], curCol + directions[i][1]]
 
-            if(nextX >= 0 && nextX < N && nextY >= 0 && nextY < M && graph[nextX][nextY] === 0) {
-                virusQueue.push([nextX, nextY]);
-                graph[nextX][nextY] = 2;
+            if(nextRow >= 0 && nextRow < n && nextCol >= 0 && nextCol < m && grid[nextRow][nextCol] === 0) {
+                grid[nextRow][nextCol] = 2
+                queue.push([nextRow, nextCol])
             }
         }
     }
-    return checkZero(graph);
-}
 
-// 안전 영역 세기
-function checkZero(graph) {
-    let zeroCount = 0;
-
-    for(let i = 0; i < N; i++) {
-        for(let j = 0; j < M; j++) {
-            if(graph[i][j] === 0) zeroCount += 1;
+    // 남은 0의 수 세기
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < m; j++) {
+            if(grid[i][j] === 0) safeZone += 1
         }
     }
-    return zeroCount;
+    return safeZone
 }
 
-console.log(maxCount);
+const z = zeroPositions.length
+let maxSafeZone = 0
+// 조합
+for(let a = 0; a < z; a++) {
+    for(let b = a + 1; b < z; b++) {
+        for(let c = b + 1; c < z; c++) {
+            maxSafeZone = Math.max(maxSafeZone, simulate(a, b, c))
+        }
+    }
+}
+
+console.log(maxSafeZone)
