@@ -1,51 +1,47 @@
 const fs = require('fs');
-const filePath = process.platform === 'linux' ? '/dev/stdin' : '../../input.txt';
+const filePath = process.platform === 'linux' ? '/dev/stdin' : './input.txt';
 const input = fs.readFileSync(filePath).toString().trim().split('\n');
+const [w, h] = input[0].split(' ').map(Number)
+const info = input.slice(1).map((x) => x.split(' ').map(Number))
+const graph = Array.from({length: h+2}, () => Array(w+2).fill(0))
+const even = [[-1, -1], [-1, 0], [0, -1], [0, 1], [1, -1], [1, 0]]
+const odd = [[-1, 0], [-1, 1], [0, -1], [0, 1], [1, 0], [1, 1]]
+const visited = Array.from({length: h+2}, () => Array(w+2).fill(false))
 
-const [W, H] = input[0].split(' ').map(Number);
-// 외벽을 조사할 때 여유를 두지 않으면 누락할 수 있기 때문이다.  
-const info = [Array(W + 2).fill(0)];
-for (let i = 1; i <= H; i++) {
-  info.push([0, ...input[i].split(' ').map(Number), 0]);
-}
-info.push(Array(W + 2).fill(0)); 
-
-const visited = Array.from({ length: H + 2 }, () => Array(W + 2).fill(false));
-
-// 짝수 줄 기준
-const evenDx = [1, 0, -1, -1, -1, 0];
-const evenDy = [0, -1, 0, 1, -1, 1];
-
-// 홀수 줄 기준
-const oddDx = [1, 1, 0, -1, 0, 1];
-const oddDy = [0, -1, -1, 0, 1, 1];
-
-function bfs() {
-  const queue = [[0, 0]];
-  visited[0][0] = true;
-  let wallCount = 0;
-
-  while (queue.length > 0) {
-    const [y, x] = queue.shift();
-    const dx = y % 2 === 0 ? evenDx : oddDx;
-    const dy = y % 2 === 0 ? evenDy : oddDy;
-
-    for (let i = 0; i < 6; i++) {
-      const ny = y + dy[i];
-      const nx = x + dx[i];
-
-      if (ny < 0 || ny >= H + 2 || nx < 0 || nx >= W + 2) continue;
-
-      if (info[ny][nx] === 1) {
-        wallCount++;
-      } else if (!visited[ny][nx] && info[ny][nx] === 0) {
-        visited[ny][nx] = true;
-        queue.push([ny, nx]);
-      }
+for(let i = 1; i <= h; i++) {
+    for(let j = 1; j <= w; j++) {
+        graph[i][j] = info[i-1][j-1]
     }
-  }
-
-  return wallCount;
 }
 
-console.log(bfs());
+function bfs(startRow, startCol) {
+    const queue = [[startRow, startCol]]
+    visited[startRow][startCol] = true
+    let index = 0
+    let totalCount = 0
+    
+    while(queue.length > index) {
+        const [curRow, curCol] = queue[index++]
+        let count = 0
+        const isEven = curRow % 2 === 0
+        if(graph[curRow][curCol] === 0) {  
+            for(let i = 0; i < 6; i++) {
+                const nextRow = isEven ? even[i][0] + curRow : odd[i][0] + curRow 
+                const nextCol = isEven ? even[i][1] + curCol : odd[i][1] + curCol 
+
+                if(nextRow >= 0 && nextRow <= h + 1 && nextCol >= 0 && nextCol <= w + 1 && !visited[nextRow][nextCol]) {
+                    if(graph[nextRow][nextCol] === 1) {
+                        count += 1
+                    } else {
+                        visited[nextRow][nextCol] = true
+                        queue.push([nextRow, nextCol])
+                    }
+                } 
+            }
+        }
+        totalCount += count
+    }
+    return totalCount
+}
+
+console.log(bfs(0, 0))
