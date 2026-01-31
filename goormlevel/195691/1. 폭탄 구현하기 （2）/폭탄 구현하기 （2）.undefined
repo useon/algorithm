@@ -1,0 +1,59 @@
+const readline = require('readline');
+let rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+const input = [];
+rl.on('line', (line) => {
+	if(line === '') {
+		rl.close()
+		return
+	}
+  input.push(line);
+	
+});
+
+rl.on('close', () => {
+  const [n, k] = input[0].split(' ').map(Number);
+
+  // 땅의 상태 (#, @, 0) — 절대 변경하지 않음
+  const ground = input.slice(1, n + 1).map(row => row.split(' '));
+
+  // 폭탄 누적 값 (항상 숫자)
+  const dp = Array.from({ length: n }, () => Array(n).fill(0));
+
+  const boomPlace = input.slice(n + 1);
+
+  const dRow = [0, 0, 0, -1, 1];
+  const dCol = [0, -1, 1, 0, 0];
+
+  for (let i = 0; i < k; i++) {
+    let [r, c] = boomPlace[i].split(' ').map(Number);
+    r -= 1;
+    c -= 1;
+
+    for (let d = 0; d < 5; d++) {
+      const nr = r + dRow[d];
+      const nc = c + dCol[d];
+
+      if (nr < 0 || nr >= n || nc < 0 || nc >= n) continue;
+      if (ground[nr][nc] === '#') continue;
+
+      if (ground[nr][nc] === '@') {
+        dp[nr][nc] += 2;
+      } else if (ground[nr][nc] === '0') {
+        dp[nr][nc] += 1;
+      }
+    }
+  }
+
+  let maxBoom = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      maxBoom = Math.max(maxBoom, dp[i][j]);
+    }
+  }
+
+  console.log(maxBoom);
+});
