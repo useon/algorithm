@@ -1,0 +1,31 @@
+// Run by Node.js
+const readline = require('readline');
+
+(async () => {
+	let rl = readline.createInterface({ input: process.stdin });
+	const input = []
+	
+	for await (const line of rl) {
+		input.push(line)
+		rl.close();
+	}
+
+	let [n1, n2] = input[0].split(' ').map(Number)
+	const d = Number(input[1])
+
+	for(let i = 0; i < d; i++) {
+		// 홀수면 구름이 바람에게
+		// 짝수면 바람이 구름에게
+		if(i % 2 === 0) {
+			const a = Math.round(n1 / 2)
+			n1 -= a
+			n2 += a
+		} else {
+			const a = Math.round(n2 /2)
+			n2 -= a
+			n1 += a
+		}
+	}
+	console.log(n1, n2)
+	process.exit();
+})();
