@@ -1,0 +1,26 @@
+const readline = require('readline');
+let rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout,
+});
+let input;
+rl.on('line', (line) => {
+	input = line;
+	rl.close();
+});
+
+rl.on('close', () => {
+  const cureArr = [14, 7, 1]
+	let totalCount = 0
+	// 14를 먼저 써야 함.
+	for(let i = 0; i < 3; i++) {
+		// 적용 전 체크
+		const cureCount = Math.floor(input / cureArr[i])
+		if(input - cureCount >= 0) {
+			input = input % cureArr[i]
+			totalCount += cureCount
+		}
+	}
+
+	console.log(totalCount)
+})
