@@ -1,0 +1,38 @@
+const readline = require('readline');
+let rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout,
+});
+let input = [];
+rl.on('line', (line) => {
+	if(line === '') {
+		rl.close();
+		return
+	}
+	input.push(line)
+});
+
+rl.on('close', () => {
+	const n = Number(input[0])
+	const flavors = input[1].split(' ').map(Number)
+	const flavorsSum = flavors.reduce((a, b) => a + b)
+	const maxNum = Math.max(...flavors)
+	// 가장 큰 수를 기준으로 위 아래 같거나 점점 작아져야 함.
+  const maxIndex = flavors.indexOf(maxNum)
+	const partA = flavors.slice(0, maxIndex + 1) // 오름차순이 되어야 함
+	const partB = flavors.slice(maxIndex) // 내림차순이 되어야 함
+
+	let isAscending = true
+	let isDescending = true
+
+	for(let i = 0; i < partA.length - 1; i++) {
+		if(partA[i] > partA[i + 1]) isAscending = false
+	}
+
+	for(let j = 0; j < partB.length - 1; j++) {
+		if(partB[j] < partB[j + 1]) isDescending = false
+	}
+
+	console.log(isAscending && isDescending ? flavorsSum : 0)
+	process.exit()
+})
